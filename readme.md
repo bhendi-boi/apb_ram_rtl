@@ -2,4 +2,4 @@
 
 ## File structure
 
-- `slave.sv` contains ram module
+- `completer.sv` contains ram module
