@@ -14,8 +14,10 @@ module apb_slave #(
     output logic PSLVERR
 );
 
-    reg [31:0] mem[32];
+    // parameterised memory
+    reg [DATA_WIDTH-1:0] mem[ADDR_WIDTH-1:0];
 
+    // an enum to store current state in the FSM
     typedef enum {
         idle = 0,
         setup = 1,
@@ -26,6 +28,7 @@ module apb_slave #(
     state_t current_state;
     state_t next_state;
 
+    // reset decoder
     always @(posedge PCLK) begin
         if (!PRESETn) begin
             reset_mem();
@@ -36,6 +39,7 @@ module apb_slave #(
     always_comb begin
         case (current_state)
 
+            // when reset is applied completer goes to this state
             idle: begin
                 PRDATA <= 0;
                 PREADY <= 0;
@@ -43,15 +47,22 @@ module apb_slave #(
                 next_state <= setup;
             end
 
+            // completer stays in this state unless PSEL is asserted
             setup: begin
                 if (!PSEL) next_state <= setup;
                 else next_state <= access;
             end
 
             access: begin
+
+                // if PENABLE is not asserted i.e., there is no active transfer; completet goes to setup
                 if (!PENABLE) next_state <= setup;
                 else begin
+
+                    // no matter the address the next state is always transfer
                     next_state <= transfer;
+
+                    // if PADDR is beyond ADDR_WIDTH-1 completer must assert PSLVERR
                     if (PADDR > 32) begin
                         PREADY  <= 1;
                         PSLVERR <= 1;
@@ -74,11 +85,14 @@ module apb_slave #(
                 PSLVERR <= 0;
             end
 
+            // adding this to ensure there are no latches
             default: next_state <= idle;
 
         endcase
     end
 
+
+    // helper function for abstraction
     function void reset_mem();
         foreach (mem[i]) begin
             mem[i] = 0;
