@@ -41,7 +41,7 @@ module apb_slave #(
 
             // when reset is applied completer goes to this state
             idle: begin
-                PRDATA <= 0;
+                PRDATA <= 32'hx;
                 PREADY <= 0;
                 PSLVERR <= 0;
                 next_state <= setup;
@@ -66,7 +66,7 @@ module apb_slave #(
                     if (PADDR > 32) begin
                         PREADY  <= 1;
                         PSLVERR <= 1;
-                        PRDATA  <= 32'hxxxxxxxx;
+                        PRDATA  <= 32'hx;
                     end else begin
                         if (PWRITE) begin
                             mem[PADDR] = PWDATA;
