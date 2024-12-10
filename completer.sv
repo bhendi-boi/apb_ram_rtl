@@ -1,4 +1,4 @@
-module apb_slave #(
+module apb3_completer #(
     ADDR_WIDTH = 32,
     DATA_WIDTH = 32
 ) (
