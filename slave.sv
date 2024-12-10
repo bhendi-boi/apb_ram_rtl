@@ -42,8 +42,8 @@ module apb_slave #(
             // when reset is applied completer goes to this state
             idle: begin
                 PRDATA <= 32'hx;
-                PREADY <= 0;
-                PSLVERR <= 0;
+                PREADY <= 1'b0;
+                PSLVERR <= 1'b0;
                 next_state <= setup;
             end
 
@@ -64,8 +64,8 @@ module apb_slave #(
 
                     // if PADDR is beyond ADDR_WIDTH-1 completer must assert PSLVERR
                     if (PADDR > 32) begin
-                        PREADY  <= 1;
-                        PSLVERR <= 1;
+                        PREADY  <= 1'b1;
+                        PSLVERR <= 1'b1;
                         PRDATA  <= 32'hx;
                     end else begin
                         if (PWRITE) begin
@@ -73,16 +73,16 @@ module apb_slave #(
                         end else begin
                             PRDATA <= mem[PADDR];
                         end
-                        PREADY  <= 1;
-                        PSLVERR <= 0;
+                        PREADY  <= 1'b1;
+                        PSLVERR <= 1'b0;
                     end
                 end
             end
 
             transfer: begin
                 next_state <= setup;
-                PREADY <= 0;
-                PSLVERR <= 0;
+                PREADY <= 1'b0;
+                PSLVERR <= 1'b0;
             end
 
             // adding this to ensure there are no latches
