@@ -18,7 +18,7 @@ module apb3_completer #(
     reg [DATA_WIDTH-1:0] mem[ADDR_WIDTH-1:0];
 
     // an enum to store current state in the FSM
-    typedef enum {
+    typedef enum bit [1:0] {
         idle = 0,
         setup = 1,
         access = 2,
