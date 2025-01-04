@@ -41,9 +41,6 @@ module apb3_completer #(
 
             // when reset is applied completer goes to this state
             idle: begin
-                PRDATA <= 32'hx;
-                PREADY <= 1'b0;
-                PSLVERR <= 1'b0;
                 next_state <= setup;
             end
 
@@ -62,33 +59,45 @@ module apb3_completer #(
                     // no matter the address the next state is always transfer
                     next_state <= transfer;
 
-                    // if PADDR is beyond ADDR_WIDTH-1 completer must assert PSLVERR
-                    if (PADDR > 32) begin
-                        PREADY  <= 1'b1;
-                        PSLVERR <= 1'b1;
-                        PRDATA  <= 32'hx;
-                    end else begin
-                        if (PWRITE) begin
-                            mem[PADDR] = PWDATA;
-                        end else begin
-                            PRDATA <= mem[PADDR];
-                        end
-                        PREADY  <= 1'b1;
-                        PSLVERR <= 1'b0;
-                    end
                 end
             end
 
             transfer: begin
                 next_state <= setup;
-                PREADY <= 1'b0;
-                PSLVERR <= 1'b0;
             end
 
             // adding this to ensure there are no latches
             default: next_state <= idle;
 
         endcase
+    end
+
+    always @(posedge PCLK) begin
+        if (current_state == idle) begin
+            PRDATA  <= 32'hx;
+            PREADY  <= 1'b0;
+            PSLVERR <= 1'b0;
+        end
+        if (current_state == access) begin
+            // if PADDR is beyond ADDR_WIDTH-1 completer must assert PSLVERR
+            if (PADDR > 32) begin
+                PREADY  <= 1'b1;
+                PSLVERR <= 1'b1;
+                PRDATA  <= 32'hx;
+            end else begin
+                if (PWRITE) begin
+                    mem[PADDR] = PWDATA;
+                end else begin
+                    PRDATA <= mem[PADDR];
+                end
+                PREADY  <= 1'b1;
+                PSLVERR <= 1'b0;
+            end
+        end
+        if (current_state == transfer) begin
+            PREADY  <= 1'b0;
+            PSLVERR <= 1'b0;
+        end
     end
 
 
